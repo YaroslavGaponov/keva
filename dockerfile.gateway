@@ -1,11 +1,10 @@
-FROM golang as dev
-WORKDIR /app
+FROM golang:alpine as dev
+WORKDIR $GOPATH/src/keva/gateway/
 COPY . .
-RUN make build_gateway
+RUN CGO_ENABLED=0 go build -o /go/bin/gateway cmd/gateway/main.go
 
-FROM golang
-WORKDIR /app
-COPY --from=dev /app/gateway gateway
+FROM scratch
+COPY --from=dev /go/bin/gateway /go/bin/gateway
 ENV PORT=5555
 EXPOSE  5555
-CMD [ "/app/gateway"]
+ENTRYPOINT [ "/go/bin/gateway"]

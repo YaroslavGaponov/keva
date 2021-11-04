@@ -1,9 +1,8 @@
-FROM golang as dev
-WORKDIR /app
+FROM golang:alpine as dev
+WORKDIR $GOPATH/src/keva/node/
 COPY . .
-RUN make build_node
+RUN CGO_ENABLED=0 go build -o /go/bin/node cmd/node/main.go
 
-FROM golang
-WORKDIR /app
-COPY --from=dev /app/node node
-CMD [ "/app/node"]
+FROM scratch
+COPY --from=dev /go/bin/node /go/bin/node
+ENTRYPOINT [ "/go/bin/node"]
