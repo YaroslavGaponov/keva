@@ -1,0 +1,11 @@
+FROM golang as dev
+WORKDIR /app
+COPY . .
+RUN make build_gateway
+
+FROM golang
+WORKDIR /app
+COPY --from=dev /app/gateway gateway
+ENV PORT=5555
+EXPOSE  5555
+CMD [ "/app/gateway"]

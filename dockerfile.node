@@ -1,0 +1,9 @@
+FROM golang as dev
+WORKDIR /app
+COPY . .
+RUN make build_node
+
+FROM golang
+WORKDIR /app
+COPY --from=dev /app/node node
+CMD [ "/app/node"]

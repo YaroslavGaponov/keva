@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+
+  gateway:
+    build:
+      context: .
+      dockerfile: dockerfile.gateway
+    environment: 
+        - PORT=5555
+        - LOG_LEVEL=all
+    ports:
+      - '5555:5555'
+
+  node1:
+    build:
+      context: .
+      dockerfile: dockerfile.node
+
+  node2:
+    build:
+      context: .
+      dockerfile: dockerfile.node
+
+  node3:
+    build:
+      context: .
+      dockerfile: dockerfile.node
