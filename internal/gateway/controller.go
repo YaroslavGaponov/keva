@@ -27,7 +27,7 @@ func (c *Controller) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	value, err := c.api.Get(key)
+	value, err := c.api.Get(r.Context(), key)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -50,7 +50,7 @@ func (c *Controller) Set(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if status, _ := c.api.Set(key, value); status {
+	if status, _ := c.api.Set(r.Context(), key, value); status {
 		w.WriteHeader(http.StatusOK)
 	} else {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -66,7 +66,7 @@ func (c *Controller) Del(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if status, _ := c.api.Del(key); status {
+	if status, _ := c.api.Del(r.Context(), key); status {
 		w.WriteHeader(http.StatusOK)
 	} else {
 		w.WriteHeader(http.StatusInternalServerError)

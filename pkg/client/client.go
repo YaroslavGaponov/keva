@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sync"
@@ -13,6 +14,7 @@ import (
 var (
 	ErrNoQuorum = errors.New("quorum is not reached")
 	ErrTimeout  = errors.New("timeout")
+	ErrCanceled = errors.New("canceled")
 )
 
 type Client struct {
@@ -37,7 +39,7 @@ func NewClient(options *ClientOptions, subscriber cluster.Subscriber) *Client {
 	}
 }
 
-func (c *Client) Set(key string, value []byte) (bool, error) {
+func (c *Client) Set(ctx context.Context, key string, value []byte) (bool, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -92,6 +94,9 @@ func (c *Client) Set(key string, value []byte) (bool, error) {
 				c.logger.Trace("client: key %s is set with error", key)
 				return false, ErrNoQuorum
 			}
+		case <-ctx.Done():
+			c.logger.Error("client: " + ErrCanceled.Error())
+			return false, ErrCanceled
 		case <-time.After(c.options.timeout):
 			c.logger.Trace("client: key %s is setted with timeout", key)
 			return false, ErrTimeout
@@ -99,7 +104,7 @@ func (c *Client) Set(key string, value []byte) (bool, error) {
 	}
 }
 
-func (c *Client) Get(key string) ([]byte, error) {
+func (c *Client) Get(ctx context.Context, key string) ([]byte, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -157,6 +162,9 @@ func (c *Client) Get(key string) ([]byte, error) {
 				return nil, ErrNoQuorum
 			}
 
+		case <-ctx.Done():
+			c.logger.Error("client: " + ErrCanceled.Error())
+			return nil, ErrCanceled
 		case <-time.After(c.options.timeout):
 			c.logger.Error("client: key %s is got with timeout", key)
 			return nil, ErrTimeout
@@ -165,7 +173,7 @@ func (c *Client) Get(key string) ([]byte, error) {
 
 }
 
-func (c *Client) Del(key string) (bool, error) {
+func (c *Client) Del(ctx context.Context, key string) (bool, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -211,6 +219,9 @@ func (c *Client) Del(key string) (bool, error) {
 				c.logger.Trace("client: key %s is deleted with error", key)
 				return false, ErrNoQuorum
 			}
+		case <-ctx.Done():
+			c.logger.Error("client: " + ErrCanceled.Error())
+			return false, ErrCanceled
 		case <-time.After(c.options.timeout):
 			c.logger.Error("client: key %s is deleted with timeout", key)
 			return false, ErrTimeout
